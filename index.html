@@ -3,132 +3,186 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Каталог</title>
+<title>Премиум Каталог</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
 <style>
-  body { margin: 0; padding: 0; background: #fafafa; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111; }
-  
-  /* ВЕРХНЯЯ ПАНЕЛЬ */
-  .shop-topbar { background: #fff; border-bottom: 1px solid #eee; padding: 14px 20px; width: 100%; }
-  .topbar-inner { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-  .shop-title { font-size: 22px; font-weight: 700; color: #111; }
-  .shop-count { font-size: 14px; color: #888; }
+  :root {
+    --bg: #f9f9f7;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --muted: #8c8c8c;
+    --border: #ececec;
+    --accent: #bfa46f; /* Премиальный золотистый акцент */
+    --shadow: 0 4px 12px rgba(0,0,0,0.04);
+    --shadow-hover: 0 12px 24px rgba(0,0,0,0.08);
+  }
 
-  /* ГЛАВНЫЙ МАКЕТ */
-  .shop-layout { display: flex; flex-direction: row; max-width: 1400px; margin: 0 auto; position: relative; }
-  .shop-sidebar { width: 280px; min-width: 280px; flex-shrink: 0; background: #fff; border-right: 1px solid #eee; padding: 20px; z-index: 10; }
-  .shop-content { flex-grow: 1; width: calc(100% - 280px); padding: 20px; min-width: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.5; }
 
-  /* СЕТКА ТОВАРОВ (FLEXBOX) */
-  .shop-grid { display: flex; flex-wrap: wrap; gap: 16px; width: 100%; }
-  .shop-item { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); display: flex; flex-direction: column; width: calc(33.333% - 11px); }
-  @media (max-width: 900px) { .shop-item { width: calc(50% - 8px); } }
-  @media (max-width: 500px) { .shop-item { width: 100%; } }
+  /* ШАПКА */
+  .header { background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 24px 30px; }
+  .header-inner { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+  .header h1 { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; }
+  .header .count { font-size: 13px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; }
 
-  /* КАРТОЧКА ТОВАРА */
-  .shop-img-wrap { width: 100%; padding-bottom: 100%; position: relative; background: #f5f5f5; overflow: hidden; }
-  .shop-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-  .shop-no-photo { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px; }
-  .shop-info { padding: 12px; display: flex; flex-direction: column; flex-grow: 1; }
-  .shop-cat { font-size: 10px; color: #999; text-transform: uppercase; margin-bottom: 3px; }
-  .shop-name { font-size: 14px; font-weight: 600; color: #111; margin-bottom: 6px; flex-grow: 1; line-height: 1.3; }
-  .shop-price { font-size: 16px; font-weight: 700; color: #111; }
-  .shop-old-price { text-decoration: line-through; color: #aaa; font-weight: 400; font-size: 12px; margin-left: 6px; }
+  /* ПОИСК */
+  .search-bar { max-width: 1400px; margin: 30px auto 0; padding: 0 30px; }
+  .search-input { width: 100%; padding: 14px 20px; border: 1px solid var(--border); border-radius: 50px; font-family: 'Inter', sans-serif; font-size: 14px; background: var(--card-bg); transition: all 0.2s; }
+  .search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(191, 164, 111, 0.1); }
+
+  /* МАКЕТ */
+  .layout { max-width: 1400px; margin: 30px auto; padding: 0 30px; display: flex; gap: 40px; }
+  .sidebar { width: 260px; flex-shrink: 0; }
+  .content { flex-grow: 1; min-width: 0; }
+
+  /* ПРИЛИПАЮЩИЙ САЙДБАР (Sticky) */
+  @media (min-width: 901px) {
+    .sidebar-inner { position: sticky; top: 30px; background: var(--card-bg); padding: 24px; border-radius: 12px; box-shadow: var(--shadow); }
+  }
 
   /* ФИЛЬТРЫ */
-  .shop-sort { padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; background: #fff; color: #333; max-width: 300px; width: 100%; margin-bottom: 16px; }
-  .filter-title { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #666; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #eee; font-weight: 600; }
-  .filter-main { width: 100%; font-size: 14px; font-weight: 600; cursor: pointer; padding: 10px 0; color: #222; display: flex; justify-content: space-between; align-items: center; }
-  .filter-subs { padding-left: 12px; }
-  .filter-sub-item { padding: 6px 0; font-size: 13px; color: #444; cursor: pointer; display: flex; align-items: center; }
-  .filter-sub-item input { margin-right: 8px; cursor: pointer; width: 16px; height: 16px; pointer-events: none; }
-  .stags-wrap { margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 6px; }
-  .stag { display: inline-flex; align-items: center; padding: 4px 10px; background: #f0f0f0; border-radius: 14px; font-size: 12px; color: #333; cursor: pointer; }
-  .btn-reset { display: block; width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; color: #666; cursor: pointer; text-align: center; margin-top: 16px; background: #fff; }
+  .filter-title { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+  .filter-group { margin-bottom: 16px; }
+  .filter-main { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 8px 0; font-weight: 500; font-size: 15px; }
+  .filter-main:hover { color: var(--accent); }
+  .arrow { transition: transform 0.2s; color: var(--muted); font-size: 12px; }
+  .filter-main.open .arrow { transform: rotate(90deg); }
+  .filter-subs { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out; }
+  .filter-subs.open { max-height: 500px; }
+  .sub-item { display: flex; align-items: center; padding: 8px 0 8px 16px; cursor: pointer; color: var(--muted); font-size: 14px; transition: color 0.2s; }
+  .sub-item:hover { color: var(--text); }
+  .sub-item input { margin-right: 10px; accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; pointer-events: none; }
+  .sub-item.active { color: var(--text); font-weight: 500; }
+  .sub-count { margin-left: auto; font-size: 12px; color: #ccc; }
+
+  .btn-reset { width: 100%; padding: 12px; margin-top: 20px; border: 1px solid var(--border); background: transparent; border-radius: 50px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--muted); transition: all 0.2s; }
+  .btn-reset:hover { border-color: var(--text); color: var(--text); }
+
+  /* ТЕГИ */
+  .tags-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  .tag { background: #f0f0f0; padding: 6px 14px; border-radius: 50px; font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: background 0.2s; }
+  .tag:hover { background: #e0e0e0; }
+  .tag-close { font-size: 14px; line-height: 1; }
+
+  /* СОРТИРОВКА */
+  .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .sort-select { padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; background: var(--card-bg); cursor: pointer; }
+
+  /* СЕТКА ТОВАРОВ */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+  @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 700px) { .grid { grid-template-columns: 1fr; gap: 20px; } }
+
+  /* КАРТОЧКА ТОВАРА */
+  .card { background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); transition: box-shadow 0.3s ease, transform 0.3s ease; display: flex; flex-direction: column; opacity: 0; animation: fadeIn 0.5s forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+  .card:hover { box-shadow: var(--shadow-hover); transform: translateY(-4px); }
+
+  .card-img-wrap { width: 100%; padding-bottom: 100%; position: relative; overflow: hidden; background: #f5f5f5; }
+  .card-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+  .card:hover .card-img { transform: scale(1.05); }
+  
+  .badge-sale { position: absolute; top: 12px; left: 12px; background: var(--text); color: #fff; padding: 4px 10px; font-size: 10px; letter-spacing: 1px; border-radius: 4px; }
+
+  .card-info { padding: 18px; display: flex; flex-direction: column; flex-grow: 1; }
+  .card-cat { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 6px; }
+  .card-name { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 500; margin-bottom: 12px; flex-grow: 1; }
+  .card-price { font-size: 18px; font-weight: 700; }
+  .card-old-price { font-size: 14px; color: #ccc; text-decoration: line-through; margin-left: 8px; font-weight: 400; }
+
+  /* ЗАГРУЗКА И ОШИБКИ */
+  .loading, .empty { grid-column: 1 / -1; text-align: center; padding: 60px; color: var(--muted); font-family: 'Playfair Display', serif; font-size: 24px; }
+  .spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
 
   /* МОБИЛЬНОЕ МЕНЮ */
-  .mob-filter-btn { display: none; width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 30px; text-align: center; font-size: 14px; color: #333; cursor: pointer; background: #fff; margin-bottom: 16px; }
-  .shop-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 99998; }
-  .shop-overlay.is-open { display: block; }
+  .mob-filter-btn { display: none; padding: 12px 24px; background: var(--text); color: #fff; border: none; border-radius: 50px; font-family: 'Inter', sans-serif; font-size: 14px; cursor: pointer; margin-bottom: 20px; }
+  .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9998; opacity: 0; transition: opacity 0.3s; }
+  .overlay.open { display: block; opacity: 1; }
 
-  @media (max-width: 768px) {
-    .shop-layout { flex-direction: column; }
-    .shop-sidebar { position: fixed; top: 0; left: -320px; width: 300px; min-width: 300px; height: 100vh; z-index: 99999; box-shadow: 2px 0 10px rgba(0,0,0,0.1); transition: left 0.3s ease; overflow-y: auto; }
-    .shop-sidebar.is-open { left: 0; }
+  @media (max-width: 900px) {
+    .header { padding: 20px; }
+    .header h1 { font-size: 26px; }
+    .search-bar { padding: 0 20px; margin-top: 20px; }
+    .layout { flex-direction: column; padding: 20px; margin-top: 20px; }
+    .sidebar { width: 100%; display: none; }
+    .sidebar.is-open { display: block; position: fixed; top: 0; left: 0; width: 300px; height: 100%; background: #fff; z-index: 9999; padding: 30px; overflow-y: auto; transform: translateX(-100%); transition: transform 0.3s ease; }
+    .sidebar.is-open.show { transform: translateX(0); }
+    .sidebar-inner { box-shadow: none; padding: 0; }
     .mob-filter-btn { display: block; }
-    .shop-content { width: 100%; padding: 0 16px 20px 16px; }
   }
 </style>
 </head>
 <body>
 
-<div id="tilda-shop-unique-root">
-  <div class="shop-topbar">
-    <div class="topbar-inner">
-      <span class="shop-title">Украшения</span>
-      <span id="scount" class="shop-count"></span>
+<div class="header">
+  <div class="header-inner">
+    <h1>Украшения</h1>
+    <div class="count" id="scount">Загрузка...</div>
+  </div>
+</div>
+
+<div class="search-bar">
+  <input type="text" id="ssearch" class="search-input" placeholder="Поиск по названию...">
+</div>
+
+<div class="layout">
+  <button class="mob-filter-btn" data-action="open-filters">☰ Фильтры</button>
+  
+  <div class="sidebar" id="ssb">
+    <div class="sidebar-inner">
+      <div class="filter-title">Категории</div>
+      <div id="sfilters"></div>
+      <button class="btn-reset" data-action="reset">Сбросить все</button>
     </div>
   </div>
 
-  <div class="shop-layout">
-    <div id="ssb" class="shop-sidebar">
-      <div class="filter-title">Категории</div>
-      <div id="sfilters"></div>
-      <div class="btn-reset" data-action="reset">Сбросить все</div>
+  <div class="content">
+    <div class="tags-wrap" id="stags"></div>
+    
+    <div class="top-bar">
+      <select id="ssort" class="sort-select">
+        <option value="default">Сортировка: По умолчанию</option>
+        <option value="price-asc">Цена: по возрастанию</option>
+        <option value="price-desc">Цена: по убыванию</option>
+        <option value="name">По названию (А-Я)</option>
+      </select>
     </div>
 
-    <div class="shop-content">
-      <div class="mob-filter-btn" data-action="open-filters">☰ Фильтры</div>
-      <select id="ssort" class="shop-sort">
-        <option value="default">Сортировка: По умолчанию</option>
-        <option value="price-asc">Цена ↑</option>
-        <option value="price-desc">Цена ↓</option>
-        <option value="name">По названию</option>
-      </select>
-      <div id="stags" class="stags-wrap"></div>
-      <div id="scatalog" class="shop-grid">
-        <div style="width:100%; text-align:center; padding:60px 20px; color:#888;">Загрузка...</div>
+    <div class="grid" id="scatalog">
+      <div class="loading">
+        <div class="spinner"></div>
+        Загрузка коллекции...
       </div>
     </div>
   </div>
-  <div id="soverlay" class="shop-overlay" data-action="close-filters"></div>
 </div>
+
+<div class="overlay" id="soverlay" data-action="close-filters"></div>
 
 <script>
 var SHEET_ID = "1oQ9WrKBZiJwRFu_FMoJGHJH4pZLLXkgVeOaneu85diU";
-var sItems = [], sSel = {}, sSort = "default", sGroupState = {}, sSidebarOpen = false;
-var root = document.getElementById('tilda-shop-unique-root');
-var catalogEl = document.getElementById('scatalog');
-var filtersEl = document.getElementById('sfilters');
-var tagsEl = document.getElementById('stags');
-var sortEl = document.getElementById('ssort');
-var countEl = document.getElementById('scount');
-var sidebarEl = document.getElementById('ssb');
-var overlayEl = document.getElementById('soverlay');
+var sItems = [], sSel = {}, sSort = "default", sSearch = "";
 
-// Функция для отправки высоты в Тильду
 function sendHeightToParent() {
   var height = document.body.scrollHeight;
-  if (window.parent) {
-    window.parent.postMessage({ type: 'tildaFrameHeight', height: height }, '*');
-  }
+  if (window.parent) window.parent.postMessage({ type: 'tildaFrameHeight', height: height }, '*');
 }
 
-function normalizeStr(str) {
-  if (!str) return "";
-  str = String(str).trim();
-  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-}
+function normalizeStr(str) { if (!str) return ""; str = String(str).trim(); return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase(); }
 
 function sLoad() {
-  catalogEl.innerHTML = '<div style="width:100%; text-align:center; padding:60px 20px; color:#888;">Загрузка каталога...</div>';
   fetch("https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/export?format=csv&gid=0")
-    .then(function(r) { if (!r.ok) throw 1; return r.text(); })
-    .then(function(t) { sItems = sParseCSV(t); sRenderAll(); sCheckMobile(); })
-    .catch(function() { catalogEl.innerHTML = '<div style="width:100%; text-align:center; padding:60px 20px; color:#c00;">Ошибка загрузки.</div>'; });
+    .then(r => r.ok ? r.text() : Promise.reject())
+    .then(t => { sItems = sParseCSV(t); sRenderAll(); })
+    .catch(() => { document.getElementById("scatalog").innerHTML = '<div class="empty">Ошибка загрузки каталога.<br>Проверьте доступ к Google Таблице.</div>'; sendHeightToParent(); });
 }
 
 function sParseCSV(text) {
-  var lines = text.split(/\r?\n/).filter(function(l) { return l.trim(); });
+  var lines = text.split(/\r?\n/).filter(l => l.trim());
   if (lines.length < 2) return [];
   var out = [];
   for (var i = 1; i < lines.length; i++) {
@@ -143,88 +197,103 @@ function sParseLine(line) {
   var r = [], cur = "", q = false;
   for (var i = 0; i < line.length; i++) {
     var ch = line[i];
-    if (ch === '"') { q = !q; continue; }
-    if (ch === "," && !q) { r.push(cur.trim()); cur = ""; continue; }
-    cur += ch;
+    if (ch === '"') q = !q;
+    else if (ch === "," && !q) { r.push(cur.trim()); cur = ""; }
+    else cur += ch;
   }
   r.push(cur.trim());
   return r;
 }
 
-function sGetCats() { var s = new Set(); sItems.forEach(function(i) { if(i.cat) s.add(i.cat); }); return Array.from(s); }
-function sGetSubs(c) { var s = new Set(); sItems.filter(function(i) { return i.cat === c; }).forEach(function(i) { if(i.sub) s.add(i.sub); }); return Array.from(s); }
+function sGetCats() { var s = new Set(); sItems.forEach(i => { if(i.cat) s.add(i.cat); }); return Array.from(s); }
+function sGetSubs(c) { var s = new Set(); sItems.filter(i => i.cat === c).forEach(i => { if(i.sub) s.add(i.sub); }); return Array.from(s); }
 
 function sGetFiltered() {
   var out = [];
   var hasF = Object.keys(sSel).length > 0;
   var cats = hasF ? Object.keys(sSel) : sGetCats();
-  cats.forEach(function(c) {
+  cats.forEach(c => {
     var subs = (sSel[c] && sSel[c].length) ? sSel[c] : sGetSubs(c);
     if (!subs.length) subs = [""];
-    subs.forEach(function(sub) {
-      sItems.filter(function(i) { return i.cat === c && (sub ? i.sub === sub : true); }).forEach(function(i) { out.push(Object.assign({}, i)); });
+    subs.forEach(sub => {
+      sItems.filter(i => i.cat === c && (sub ? i.sub === sub : true)).forEach(i => out.push({...i}));
     });
   });
-  if (sSort === "price-asc") out.sort(function(a, b) { return a.price - b.price; });
-  else if (sSort === "price-desc") out.sort(function(a, b) { return b.price - a.price; });
-  else if (sSort === "name") out.sort(function(a, b) { return a.name.localeCompare(b.name); });
+  
+  if (sSearch) {
+    out = out.filter(i => i.name.toLowerCase().includes(sSearch.toLowerCase()));
+  }
+
+  if (sSort === "price-asc") out.sort((a, b) => a.price - b.price);
+  else if (sSort === "price-desc") out.sort((a, b) => b.price - a.price);
+  else if (sSort === "name") out.sort((a, b) => a.name.localeCompare(b.name));
   return out;
 }
 
 function sRenderFilters() {
   var h = "";
-  sGetCats().forEach(function(cat) {
+  sGetCats().forEach(cat => {
     var subs = sGetSubs(cat);
-    var cnt = sItems.filter(function(i) { return i.cat === cat; }).length;
-    var isOpen = !!(sSel[cat] && sSel[cat].length);
-    if (sGroupState[cat] === undefined) sGroupState[cat] = isOpen;
-    var gid = "g_" + cat.replace(/[^a-zа-я0-9]/gi, "_");
-    h += '<div class="filter-group"><div class="filter-main" data-action="toggle-group" data-gid="' + gid + '"><span>' + cat + '</span><span style="color:#aaa; font-weight:400; font-size:12px; display:flex; align-items:center; gap:6px;">' + cnt + ' <span id="' + gid + '_arr" style="display:inline-block; transition:transform .15s; ' + (sGroupState[cat] ? "transform:rotate(90deg)" : "") + '">▶</span></span></div>';
+    var cnt = sItems.filter(i => i.cat === cat).length;
+    h += '<div class="filter-group"><div class="filter-main" data-action="toggle-group"><span>' + cat + ' (' + cnt + ')</span><span class="arrow">▶</span></div>';
     if (subs.length) {
-      h += '<div id="' + gid + '_list" class="filter-subs" style="' + (sGroupState[cat] ? "" : "display:none;") + '">';
-      subs.forEach(function(sub) {
+      h += '<div class="filter-subs">';
+      subs.forEach(sub => {
         var ck = (sSel[cat] && sSel[cat].includes(sub)) ? "checked" : "";
-        var sc = sItems.filter(function(i) { return i.cat === cat && i.sub === sub; }).length;
-        h += '<div class="filter-sub-item" data-action="toggle-sub" data-cat="' + cat + '" data-sub="' + sub + '"><input type="checkbox" ' + ck + ' disabled><span style="flex-grow:1;">' + sub + '</span><span style="color:#aaa; font-size:11px;">' + sc + '</span></div>';
+        var active = ck ? "active" : "";
+        var sc = sItems.filter(i => i.cat === cat && i.sub === sub).length;
+        h += '<div class="sub-item ' + active + '" data-action="toggle-sub" data-cat="' + cat + '" data-sub="' + sub + '"><input type="checkbox" ' + ck + ' disabled><span>' + sub + '</span><span class="sub-count">' + sc + '</span></div>';
       });
       h += '</div>';
     }
     h += '</div>';
   });
-  filtersEl.innerHTML = h;
+  document.getElementById("sfilters").innerHTML = h;
 }
 
 function sRenderTags() {
   var h = "";
-  Object.keys(sSel).forEach(function(cat) {
-    sSel[cat].forEach(function(sub) {
-      h += '<span class="stag" data-action="toggle-sub" data-cat="' + cat + '" data-sub="' + sub + '">' + sub + ' ×</span>';
+  Object.keys(sSel).forEach(cat => {
+    sSel[cat].forEach(sub => {
+      h += '<div class="tag" data-action="toggle-sub" data-cat="' + cat + '" data-sub="' + sub + '">' + sub + ' <span class="tag-close">×</span></div>';
     });
   });
-  if (h) h += '<span class="stag" data-action="reset" style="color:#c00; background:transparent;">сбросить все</span>';
-  tagsEl.innerHTML = h;
+  document.getElementById("stags").innerHTML = h;
 }
 
 function sRenderCatalog() {
   var list = sGetFiltered();
-  countEl.textContent = list.length + " товар" + (list.length === 1 ? "" : (list.length < 5 ? "а" : "ов"));
+  var el = document.getElementById("scatalog");
+  document.getElementById("scount").textContent = list.length + " товаров";
+  
   if (!list.length) {
-    catalogEl.innerHTML = '<div style="width:100%; text-align:center; padding:60px 20px; color:#888;">Товары не найдены</div>';
-    sendHeightToParent(); // Обновляем высоту
+    el.innerHTML = '<div class="empty">Ничего не найдено</div>';
+    sendHeightToParent();
     return;
   }
-  var h = "";
-  for (var i = 0; i < list.length; i++) {
-    var p = list[i];
-    var imgHtml = p.img 
-      ? '<img src="' + p.img + '" class="shop-img" loading="lazy" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\'"><div class="shop-no-photo" style="display:none;">Нет фото</div>' 
-      : '<div class="shop-no-photo" style="display:flex;">Нет фото</div>';
-    h += '<div class="shop-item"><div class="shop-img-wrap">' + imgHtml + '</div><div class="shop-info"><div class="shop-cat">' + (p.sub || p.cat) + '</div><div class="shop-name">' + p.name + '</div><div class="shop-price">' + (p.price ? p.price.toLocaleString("ru-RU") + " ₽" : "По запросу") + (p.old ? '<span class="shop-old-price">' + p.old.toLocaleString("ru-RU") + ' ₽</span>' : '') + '</div></div></div>';
-  }
-  catalogEl.innerHTML = h;
   
-  // Ждем загрузки картинок, чтобы правильно посчитать высоту для Тильды
-  setTimeout(sendHeightToParent, 500);
+  var h = "";
+  list.forEach((p, i) => {
+    var imgHtml = p.img 
+      ? '<img src="' + p.img + '" class="card-img" loading="lazy" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\'"><div style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; align-items:center; justify-content:center; color:#999;">Нет фото</div>' 
+      : '<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#999;">Нет фото</div>';
+    
+    var saleBadge = p.old ? '<div class="badge-sale">SALE</div>' : '';
+    
+    // Задержка для анимации появления
+    var delay = i * 0.05;
+    
+    h += '<div class="card" style="animation-delay:' + delay + 's">';
+    h += '<div class="card-img-wrap">' + saleBadge + imgHtml + '</div>';
+    h += '<div class="card-info">';
+    h += '<div class="card-cat">' + (p.sub || p.cat) + '</div>';
+    h += '<div class="card-name">' + p.name + '</div>';
+    h += '<div class="card-price">' + (p.price ? p.price.toLocaleString("ru-RU") + " ₽" : "По запросу");
+    if (p.old) h += '<span class="card-old-price">' + p.old.toLocaleString("ru-RU") + " ₽</span>";
+    h += '</div></div></div>';
+  });
+  el.innerHTML = h;
+  setTimeout(sendHeightToParent, 600);
 }
 
 function sToggleSub(cat, sub) {
@@ -236,40 +305,45 @@ function sToggleSub(cat, sub) {
   sRenderAll();
 }
 
-function sResetAll() { sSel = {}; sRenderAll(); }
+function sResetAll() { sSel = {}; document.getElementById("ssearch").value = ""; sSearch = ""; sRenderAll(); }
 function sRenderAll() { sRenderFilters(); sRenderTags(); sRenderCatalog(); }
 
-function sOpenSidebar() { if (window.innerWidth > 768) return; sidebarEl.classList.add("is-open"); overlayEl.classList.add("is-open"); document.body.style.overflow = "hidden"; sSidebarOpen = true; }
-function sCloseSidebar() { sidebarEl.classList.remove("is-open"); overlayEl.classList.remove("is-open"); document.body.style.overflow = ""; sSidebarOpen = false; sendHeightToParent(); }
-function sCheckMobile() { var w = window.innerWidth; var mobBtn = root.querySelector(".mob-filter-btn"); if (w <= 768) { if (mobBtn) mobBtn.style.display = "block"; if (!sSidebarOpen) sCloseSidebar(); } else { if (mobBtn) mobBtn.style.display = "none"; sCloseSidebar(); } }
-
-root.addEventListener('click', function(e) {
+// ОБРАБОТКА КЛИКОВ
+document.addEventListener('click', function(e) {
   var target = e.target.closest('[data-action]');
   if (!target) return;
   var action = target.getAttribute('data-action');
-  var cat = target.getAttribute('data-cat');
-  var sub = target.getAttribute('data-sub');
-  var gid = target.getAttribute('data-gid');
+
   if (action === 'toggle-group') {
-    var list = document.getElementById(gid + "_list");
-    var arr = document.getElementById(gid + "_arr");
-    if (!list) return;
-    var show = list.style.display === "none" || list.style.display === "";
-    list.style.display = show ? "block" : "none";
-    if (arr) arr.style.transform = show ? "rotate(90deg)" : "";
-    setTimeout(sendHeightToParent, 300);
+    target.classList.toggle('open');
+    target.nextElementSibling.classList.toggle('open');
   } 
-  else if (action === 'toggle-sub') { sToggleSub(cat, sub); } 
+  else if (action === 'toggle-sub') {
+    sToggleSub(target.getAttribute('data-cat'), target.getAttribute('data-sub'));
+    if (window.innerWidth <= 900) sCloseSidebar(); // Закрывать меню при выборе на мобилках
+  } 
   else if (action === 'reset') { sResetAll(); } 
-  else if (action === 'open-filters') { sOpenSidebar(); } 
+  else if (action === 'open-filters') {
+    document.getElementById("ssb").classList.add("is-open", "show");
+    document.getElementById("soverlay").classList.add("open");
+    document.body.style.overflow = "hidden";
+  } 
   else if (action === 'close-filters') { sCloseSidebar(); }
 });
 
-sortEl.addEventListener('change', function(e) { sSort = e.target.value; sRenderCatalog(); });
-window.addEventListener("resize", function() { sCheckMobile(); sendHeightToParent(); });
+function sCloseSidebar() {
+  var sb = document.getElementById("ssb");
+  sb.classList.remove("show");
+  document.getElementById("soverlay").classList.remove("open");
+  document.body.style.overflow = "";
+  setTimeout(() => sb.classList.remove("is-open"), 300);
+}
+
+document.getElementById("ssort").addEventListener("change", e => { sSort = e.target.value; sRenderCatalog(); });
+document.getElementById("ssearch").addEventListener("input", e => { sSearch = e.target.value; sRenderCatalog(); });
+window.addEventListener("resize", sendHeightToParent);
 
 sLoad();
-sCheckMobile();
 </script>
 </body>
 </html>
