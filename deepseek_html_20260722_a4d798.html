@@ -5,309 +5,268 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Каталог</title>
 <style>
-/* Добавляем плавность для сайдбара */
-#ssb {
-  transition: left 0.25s ease;
-}
+  body { margin: 0; padding: 0; background: #fafafa; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111; }
+  
+  /* ВЕРХНЯЯ ПАНЕЛЬ */
+  .shop-topbar { background: #fff; border-bottom: 1px solid #eee; padding: 14px 20px; width: 100%; }
+  .topbar-inner { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+  .shop-title { font-size: 22px; font-weight: 700; color: #111; }
+  .shop-count { font-size: 14px; color: #888; }
+
+  /* ГЛАВНЫЙ МАКЕТ */
+  .shop-layout { display: flex; flex-direction: row; max-width: 1400px; margin: 0 auto; position: relative; }
+  .shop-sidebar { width: 280px; min-width: 280px; flex-shrink: 0; background: #fff; border-right: 1px solid #eee; padding: 20px; z-index: 10; }
+  .shop-content { flex-grow: 1; width: calc(100% - 280px); padding: 20px; min-width: 0; }
+
+  /* СЕТКА ТОВАРОВ (FLEXBOX) */
+  .shop-grid { display: flex; flex-wrap: wrap; gap: 16px; width: 100%; }
+  .shop-item { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); display: flex; flex-direction: column; width: calc(33.333% - 11px); }
+  @media (max-width: 900px) { .shop-item { width: calc(50% - 8px); } }
+  @media (max-width: 500px) { .shop-item { width: 100%; } }
+
+  /* КАРТОЧКА ТОВАРА */
+  .shop-img-wrap { width: 100%; padding-bottom: 100%; position: relative; background: #f5f5f5; overflow: hidden; }
+  .shop-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .shop-no-photo { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px; }
+  .shop-info { padding: 12px; display: flex; flex-direction: column; flex-grow: 1; }
+  .shop-cat { font-size: 10px; color: #999; text-transform: uppercase; margin-bottom: 3px; }
+  .shop-name { font-size: 14px; font-weight: 600; color: #111; margin-bottom: 6px; flex-grow: 1; line-height: 1.3; }
+  .shop-price { font-size: 16px; font-weight: 700; color: #111; }
+  .shop-old-price { text-decoration: line-through; color: #aaa; font-weight: 400; font-size: 12px; margin-left: 6px; }
+
+  /* ФИЛЬТРЫ */
+  .shop-sort { padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; background: #fff; color: #333; max-width: 300px; width: 100%; margin-bottom: 16px; }
+  .filter-title { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #666; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #eee; font-weight: 600; }
+  .filter-main { width: 100%; font-size: 14px; font-weight: 600; cursor: pointer; padding: 10px 0; color: #222; display: flex; justify-content: space-between; align-items: center; }
+  .filter-subs { padding-left: 12px; }
+  .filter-sub-item { padding: 6px 0; font-size: 13px; color: #444; cursor: pointer; display: flex; align-items: center; }
+  .filter-sub-item input { margin-right: 8px; cursor: pointer; width: 16px; height: 16px; pointer-events: none; }
+  .stags-wrap { margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .stag { display: inline-flex; align-items: center; padding: 4px 10px; background: #f0f0f0; border-radius: 14px; font-size: 12px; color: #333; cursor: pointer; }
+  .btn-reset { display: block; width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; color: #666; cursor: pointer; text-align: center; margin-top: 16px; background: #fff; }
+
+  /* МОБИЛЬНОЕ МЕНЮ */
+  .mob-filter-btn { display: none; width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 30px; text-align: center; font-size: 14px; color: #333; cursor: pointer; background: #fff; margin-bottom: 16px; }
+  .shop-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 99998; }
+  .shop-overlay.is-open { display: block; }
+
+  @media (max-width: 768px) {
+    .shop-layout { flex-direction: column; }
+    .shop-sidebar { position: fixed; top: 0; left: -320px; width: 300px; min-width: 300px; height: 100vh; z-index: 99999; box-shadow: 2px 0 10px rgba(0,0,0,0.1); transition: left 0.3s ease; overflow-y: auto; }
+    .shop-sidebar.is-open { left: 0; }
+    .mob-filter-btn { display: block; }
+    .shop-content { width: 100%; padding: 0 16px 20px 16px; }
+  }
 </style>
 </head>
-<body style="margin:0;padding:0;background:#fafafa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-text-size-adjust:100%;">
+<body>
 
-<div id="shop-root">
-
-<div style="background:#fff;border-bottom:1px solid #eee;padding:14px 20px;">
-  <div style="max-width:1400px;margin:0 auto;">
-    <span style="font-size:22px;font-weight:700;color:#111;">Украшения</span>
-    <span id="scount" style="float:right;font-size:14px;color:#888;line-height:30px;"></span>
-  </div>
-</div>
-
-<div id="smob-btn" style="display:none;padding:10px 16px;background:#fff;border-bottom:1px solid #eee;">
-  <div onclick="sOpenSidebar()" style="display:block;padding:10px 20px;border:1px solid #ddd;border-radius:30px;text-align:center;font-size:14px;color:#333;cursor:pointer;background:#fff;">Фильтры</div>
-</div>
-
-<div style="max-width:1400px;margin:0 auto;position:relative;min-height:400px;">
-
-<!-- САЙДБАР -->
-<div id="ssb" style="position:absolute;left:0;top:0;width:260px;height:100%;min-height:400px;background:#fff;border-right:1px solid #eee;padding:20px;overflow-y:auto;z-index:10;box-sizing:border-box;">
-  <div style="font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:#666;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid #eee;font-weight:600;">Категории</div>
-  <div id="sfilters"></div>
-  <div onclick="sResetAll()" style="display:block;width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:13px;color:#666;cursor:pointer;text-align:center;margin-top:16px;background:#fff;">Сбросить все</div>
-</div>
-
-<!-- КОНТЕНТ -->
-<div style="margin-left:260px;padding:16px 20px;min-height:400px;">
-
-  <div style="margin-bottom:14px;">
-    <select onchange="sSortItems(this.value)" style="padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;background:#fff;color:#333;max-width:220px;width:100%;">
-      <option value="default">Сортировка</option>
-      <option value="price-asc">Цена ↑</option>
-      <option value="price-desc">Цена ↓</option>
-      <option value="name">По названию</option>
-    </select>
+<div id="tilda-shop-unique-root">
+  <div class="shop-topbar">
+    <div class="topbar-inner">
+      <span class="shop-title">Украшения</span>
+      <span id="scount" class="shop-count"></span>
+    </div>
   </div>
 
-  <div id="stags" style="margin-bottom:14px;"></div>
+  <div class="shop-layout">
+    <div id="ssb" class="shop-sidebar">
+      <div class="filter-title">Категории</div>
+      <div id="sfilters"></div>
+      <div class="btn-reset" data-action="reset">Сбросить все</div>
+    </div>
 
-  <div id="scatalog"></div>
-
-</div>
-
-</div>
-
-<div id="soverlay" onclick="sCloseSidebar()" style="display:none;position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:98;"></div>
-
+    <div class="shop-content">
+      <div class="mob-filter-btn" data-action="open-filters">☰ Фильтры</div>
+      <select id="ssort" class="shop-sort">
+        <option value="default">Сортировка: По умолчанию</option>
+        <option value="price-asc">Цена ↑</option>
+        <option value="price-desc">Цена ↓</option>
+        <option value="name">По названию</option>
+      </select>
+      <div id="stags" class="stags-wrap"></div>
+      <div id="scatalog" class="shop-grid">
+        <div style="width:100%; text-align:center; padding:60px 20px; color:#888;">Загрузка...</div>
+      </div>
+    </div>
+  </div>
+  <div id="soverlay" class="shop-overlay" data-action="close-filters"></div>
 </div>
 
 <script>
-var SHEET_ID="1oQ9WrKBZiJwRFu_FMoJGHJH4pZLLXkgVeOaneu85diU";
-var SHEET_NUM=1;
-var sItems=[];
-var sSel={};
-var sSort="default";
-var sGroupState={};
-var sSidebarOpen = false;  // флаг для мобильного сайдбара
+var SHEET_ID = "1oQ9WrKBZiJwRFu_FMoJGHJH4pZLLXkgVeOaneu85diU";
+var sItems = [], sSel = {}, sSort = "default", sGroupState = {}, sSidebarOpen = false;
+var root = document.getElementById('tilda-shop-unique-root');
+var catalogEl = document.getElementById('scatalog');
+var filtersEl = document.getElementById('sfilters');
+var tagsEl = document.getElementById('stags');
+var sortEl = document.getElementById('ssort');
+var countEl = document.getElementById('scount');
+var sidebarEl = document.getElementById('ssb');
+var overlayEl = document.getElementById('soverlay');
 
-function sLoad(){
-  document.getElementById("scatalog").innerHTML='<div style="text-align:center;padding:60px 20px;color:#888;">Загрузка...</div>';
-  fetch("https://docs.google.com/spreadsheets/d/"+SHEET_ID+"/export?format=csv&gid="+(SHEET_NUM-1))
-    .then(function(r){if(!r.ok)throw 1;return r.text()})
-    .then(function(t){sItems=sParseCSV(t);sRenderAll();sCheckMobile()})
-    .catch(function(){document.getElementById("scatalog").innerHTML='<div style="text-align:center;padding:60px 20px;color:#888;">Ошибка загрузки. Проверьте ID таблицы.</div>'});
+// Функция для отправки высоты в Тильду
+function sendHeightToParent() {
+  var height = document.body.scrollHeight;
+  if (window.parent) {
+    window.parent.postMessage({ type: 'tildaFrameHeight', height: height }, '*');
+  }
 }
 
-function sParseCSV(text){
-  var lines=text.split("\n").filter(function(l){return l.trim()});
-  if(lines.length<2)return[];
-  var out=[];
-  for(var i=1;i<lines.length;i++){
-    var c=sParseLine(lines[i]);
-    if(c.length<4||!c[0])continue;
-    out.push({name:c[0],cat:c[1]||"Без категории",sub:c[2]||"",price:parseInt(c[3])||0,old:parseInt(c[4])||0,img:c[5]||""});
+function normalizeStr(str) {
+  if (!str) return "";
+  str = String(str).trim();
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+function sLoad() {
+  catalogEl.innerHTML = '<div style="width:100%; text-align:center; padding:60px 20px; color:#888;">Загрузка каталога...</div>';
+  fetch("https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/export?format=csv&gid=0")
+    .then(function(r) { if (!r.ok) throw 1; return r.text(); })
+    .then(function(t) { sItems = sParseCSV(t); sRenderAll(); sCheckMobile(); })
+    .catch(function() { catalogEl.innerHTML = '<div style="width:100%; text-align:center; padding:60px 20px; color:#c00;">Ошибка загрузки.</div>'; });
+}
+
+function sParseCSV(text) {
+  var lines = text.split(/\r?\n/).filter(function(l) { return l.trim(); });
+  if (lines.length < 2) return [];
+  var out = [];
+  for (var i = 1; i < lines.length; i++) {
+    var c = sParseLine(lines[i]);
+    if (c.length < 4 || !c[0]) continue;
+    out.push({ name: c[0].trim(), cat: normalizeStr(c[1]), sub: normalizeStr(c[2]), price: parseInt(c[3]) || 0, old: parseInt(c[4]) || 0, img: c[5] ? c[5].trim() : "" });
   }
   return out;
 }
 
-function sParseLine(line){
-  var r=[],cur="",q=false;
-  for(var i=0;i<line.length;i++){
-    var ch=line[i];
-    if(ch==='"'){q=!q;continue}
-    if(ch===","&&!q){r.push(cur.trim());cur="";continue}
-    cur+=ch;
+function sParseLine(line) {
+  var r = [], cur = "", q = false;
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (ch === '"') { q = !q; continue; }
+    if (ch === "," && !q) { r.push(cur.trim()); cur = ""; continue; }
+    cur += ch;
   }
   r.push(cur.trim());
   return r;
 }
 
-function sGetCats(){
-  var s=new Set();sItems.forEach(function(i){s.add(i.cat)});return Array.from(s);
-}
-function sGetSubs(c){
-  var s=new Set();sItems.filter(function(i){return i.cat===c}).forEach(function(i){if(i.sub)s.add(i.sub)});return Array.from(s);
-}
+function sGetCats() { var s = new Set(); sItems.forEach(function(i) { if(i.cat) s.add(i.cat); }); return Array.from(s); }
+function sGetSubs(c) { var s = new Set(); sItems.filter(function(i) { return i.cat === c; }).forEach(function(i) { if(i.sub) s.add(i.sub); }); return Array.from(s); }
 
-function sGetFiltered(){
-  var out=[];
-  var hasF=Object.keys(sSel).length>0;
-  var cats=hasF?Object.keys(sSel):sGetCats();
-  cats.forEach(function(c){
-    var subs=(sSel[c]&&sSel[c].length)?sSel[c]:sGetSubs(c);
-    if(!subs.length)subs=[""];
-    subs.forEach(function(sub){
-      sItems.filter(function(i){return i.cat===c&&(sub?i.sub===sub:true)}).forEach(function(i){out.push(Object.assign({},i))});
+function sGetFiltered() {
+  var out = [];
+  var hasF = Object.keys(sSel).length > 0;
+  var cats = hasF ? Object.keys(sSel) : sGetCats();
+  cats.forEach(function(c) {
+    var subs = (sSel[c] && sSel[c].length) ? sSel[c] : sGetSubs(c);
+    if (!subs.length) subs = [""];
+    subs.forEach(function(sub) {
+      sItems.filter(function(i) { return i.cat === c && (sub ? i.sub === sub : true); }).forEach(function(i) { out.push(Object.assign({}, i)); });
     });
   });
-  if(sSort==="price-asc")out.sort(function(a,b){return a.price-b.price});
-  else if(sSort==="price-desc")out.sort(function(a,b){return b.price-a.price});
-  else if(sSort==="name")out.sort(function(a,b){return a.name.localeCompare(b.name)});
+  if (sSort === "price-asc") out.sort(function(a, b) { return a.price - b.price; });
+  else if (sSort === "price-desc") out.sort(function(a, b) { return b.price - a.price; });
+  else if (sSort === "name") out.sort(function(a, b) { return a.name.localeCompare(b.name); });
   return out;
 }
 
-function sRenderFilters(){
-  var el=document.getElementById("sfilters");
-  var h="";
-  sGetCats().forEach(function(cat){
-    var subs=sGetSubs(cat);
-    var cnt=sItems.filter(function(i){return i.cat===cat}).length;
-    var isOpen=!!(sSel[cat]&&sSel[cat].length);
-    if(sGroupState[cat]===undefined)sGroupState[cat]=isOpen;
-    var gid="g_"+cat.replace(/[^a-zа-я0-9]/gi,"_");
-    h+='<div style="margin-bottom:12px;">';
-    h+='<div onclick="sToggleGroup(\''+gid+'\')" style="width:100%;font-size:14px;font-weight:600;cursor:pointer;padding:8px 0;color:#222;border:none;background:none;text-align:left;">';
-    h+=cat+' <span style="color:#aaa;font-weight:400;font-size:12px;">'+cnt;
-    h+=' <span id="'+gid+'_arr" style="display:inline-block;font-size:10px;color:#aaa;transition:transform .15s;'+(sGroupState[cat]?"transform:rotate(90deg)":"")+'">▶</span></span></div>';
-    if(subs.length){
-      h+='<div id="'+gid+'_list" style="padding-left:12px;margin-top:2px;'+(sGroupState[cat]?"":"display:none;")+'">';
-      subs.forEach(function(sub){
-        var ck=(sSel[cat]&&sSel[cat].includes(sub))?"checked":"";
-        var sc=sItems.filter(function(i){return i.cat===cat&&i.sub===sub}).length;
-        h+='<div style="padding:5px 0;font-size:13px;color:#444;cursor:pointer;" onclick="sClickCheck(this,\''+esc(cat)+'\',\''+esc(sub)+'\')">';
-        h+='<input type="checkbox" '+ck+' style="accent-color:#333;width:15px;height:15px;margin-right:6px;cursor:pointer;vertical-align:middle;display:inline;float:none;position:static;">';
-        h+=sub;
-        h+=' <span style="color:#aaa;font-size:11px;float:right;">'+sc+'</span>';
-        h+='</div>';
+function sRenderFilters() {
+  var h = "";
+  sGetCats().forEach(function(cat) {
+    var subs = sGetSubs(cat);
+    var cnt = sItems.filter(function(i) { return i.cat === cat; }).length;
+    var isOpen = !!(sSel[cat] && sSel[cat].length);
+    if (sGroupState[cat] === undefined) sGroupState[cat] = isOpen;
+    var gid = "g_" + cat.replace(/[^a-zа-я0-9]/gi, "_");
+    h += '<div class="filter-group"><div class="filter-main" data-action="toggle-group" data-gid="' + gid + '"><span>' + cat + '</span><span style="color:#aaa; font-weight:400; font-size:12px; display:flex; align-items:center; gap:6px;">' + cnt + ' <span id="' + gid + '_arr" style="display:inline-block; transition:transform .15s; ' + (sGroupState[cat] ? "transform:rotate(90deg)" : "") + '">▶</span></span></div>';
+    if (subs.length) {
+      h += '<div id="' + gid + '_list" class="filter-subs" style="' + (sGroupState[cat] ? "" : "display:none;") + '">';
+      subs.forEach(function(sub) {
+        var ck = (sSel[cat] && sSel[cat].includes(sub)) ? "checked" : "";
+        var sc = sItems.filter(function(i) { return i.cat === cat && i.sub === sub; }).length;
+        h += '<div class="filter-sub-item" data-action="toggle-sub" data-cat="' + cat + '" data-sub="' + sub + '"><input type="checkbox" ' + ck + ' disabled><span style="flex-grow:1;">' + sub + '</span><span style="color:#aaa; font-size:11px;">' + sc + '</span></div>';
       });
-      h+='</div>';
+      h += '</div>';
     }
-    h+='</div>';
+    h += '</div>';
   });
-  el.innerHTML=h;
+  filtersEl.innerHTML = h;
 }
 
-function esc(s){return s.replace(/'/g,"\\'")}
-
-function sClickCheck(el,cat,sub){
-  var cb=el.querySelector("input");
-  if(cb)cb.checked=!cb.checked;
-  sToggleSub(cat,sub);
-}
-
-function sToggleGroup(gid){
-  var list=document.getElementById(gid+"_list");
-  var arr=document.getElementById(gid+"_arr");
-  if(!list)return;
-  var show=list.style.display==="none";
-  list.style.display=show?"block":"none";
-  if(arr)arr.style.transform=show?"rotate(90deg)":"";
-}
-
-function sRenderTags(){
-  var el=document.getElementById("stags");
-  var h="";
-  Object.keys(sSel).forEach(function(cat){
-    sSel[cat].forEach(function(sub){
-      h+='<span style="display:inline-block;padding:4px 10px;background:#f0f0f0;border-radius:14px;font-size:12px;color:#333;margin:0 6px 6px 0;">'+sub+' <span onclick="sToggleSub(\''+esc(cat)+'\',\''+esc(sub)+'\')" style="cursor:pointer;font-size:14px;color:#999;margin-left:4px;">×</span></span>';
+function sRenderTags() {
+  var h = "";
+  Object.keys(sSel).forEach(function(cat) {
+    sSel[cat].forEach(function(sub) {
+      h += '<span class="stag" data-action="toggle-sub" data-cat="' + cat + '" data-sub="' + sub + '">' + sub + ' ×</span>';
     });
   });
-  if(h)h+=' <span onclick="sResetAll()" style="display:inline-block;padding:4px 10px;font-size:12px;color:#c00;cursor:pointer;">сбросить</span>';
-  el.innerHTML=h;
+  if (h) h += '<span class="stag" data-action="reset" style="color:#c00; background:transparent;">сбросить все</span>';
+  tagsEl.innerHTML = h;
 }
 
-function sRenderCatalog(){
-  var list=sGetFiltered();
-  var el=document.getElementById("scatalog");
-  document.getElementById("scount").textContent=list.length+" товар"+(list.length===1?"":"ов");
-  if(!list.length){el.innerHTML='<div style="text-align:center;padding:60px 20px;color:#888;">Товары не найдены</div>';return}
-  var w=window.innerWidth;
-  var cols=w>1200?3:w>600?2:2;
-  var imgH=w>600?200:140;
-  var h='<table cellpadding="0" cellspacing="12" border="0" width="100%" style="width:100%;border-collapse:separate;border-spacing:12px;">';
-  for(var i=0;i<list.length;i+=cols){
-    h+='<tr valign="top">';
-    for(var j=0;j<cols;j++){
-      var p=list[i+j];
-      if(!p){h+='<td width="'+Math.floor(100/cols)+'%"></td>';continue}
-      h+='<td width="'+Math.floor(100/cols)+'%" style="background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);vertical-align:top;">';
-      h+='<img src="'+p.img+'" alt="'+p.name+'" style="width:100%;height:'+imgH+'px;object-fit:cover;display:block;background:#eee;" onerror="this.style.background=\'#eee\';this.alt=\'Нет фото\'">';
-      h+='<div style="padding:12px;">';
-      h+='<div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.3px;">'+(p.sub||p.cat)+'</div>';
-      h+='<div style="font-size:14px;font-weight:600;margin:3px 0 6px;color:#111;">'+p.name+'</div>';
-      h+='<div style="font-size:15px;font-weight:700;color:#111;">';
-      h+=p.price?p.price.toLocaleString("ru-RU")+" ₽":"По запросу";
-      if(p.old)h+=' <span style="text-decoration:line-through;color:#aaa;font-weight:400;font-size:12px;">'+p.old.toLocaleString("ru-RU")+" ₽</span>";
-      h+='</div></div></td>';
-    }
-    h+='</tr>';
+function sRenderCatalog() {
+  var list = sGetFiltered();
+  countEl.textContent = list.length + " товар" + (list.length === 1 ? "" : (list.length < 5 ? "а" : "ов"));
+  if (!list.length) {
+    catalogEl.innerHTML = '<div style="width:100%; text-align:center; padding:60px 20px; color:#888;">Товары не найдены</div>';
+    sendHeightToParent(); // Обновляем высоту
+    return;
   }
-  h+='</table>';
-  el.innerHTML=h;
+  var h = "";
+  for (var i = 0; i < list.length; i++) {
+    var p = list[i];
+    var imgHtml = p.img 
+      ? '<img src="' + p.img + '" class="shop-img" loading="lazy" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\'"><div class="shop-no-photo" style="display:none;">Нет фото</div>' 
+      : '<div class="shop-no-photo" style="display:flex;">Нет фото</div>';
+    h += '<div class="shop-item"><div class="shop-img-wrap">' + imgHtml + '</div><div class="shop-info"><div class="shop-cat">' + (p.sub || p.cat) + '</div><div class="shop-name">' + p.name + '</div><div class="shop-price">' + (p.price ? p.price.toLocaleString("ru-RU") + " ₽" : "По запросу") + (p.old ? '<span class="shop-old-price">' + p.old.toLocaleString("ru-RU") + ' ₽</span>' : '') + '</div></div></div>';
+  }
+  catalogEl.innerHTML = h;
+  
+  // Ждем загрузки картинок, чтобы правильно посчитать высоту для Тильды
+  setTimeout(sendHeightToParent, 500);
 }
 
-function sToggleSub(cat,sub){
-  if(!sSel[cat])sSel[cat]=[];
-  var idx=sSel[cat].indexOf(sub);
-  if(idx>=0)sSel[cat].splice(idx,1);
+function sToggleSub(cat, sub) {
+  if (!sSel[cat]) sSel[cat] = [];
+  var idx = sSel[cat].indexOf(sub);
+  if (idx >= 0) sSel[cat].splice(idx, 1);
   else sSel[cat].push(sub);
-  if(!sSel[cat].length)delete sSel[cat];
+  if (!sSel[cat].length) delete sSel[cat];
   sRenderAll();
 }
 
-function sResetAll(){sSel={};sRenderAll()}
-function sSortItems(v){sSort=v;sRenderCatalog()}
-function sRenderAll(){sRenderFilters();sRenderTags();sRenderCatalog()}
+function sResetAll() { sSel = {}; sRenderAll(); }
+function sRenderAll() { sRenderFilters(); sRenderTags(); sRenderCatalog(); }
 
-/* ========== МОБИЛЬНЫЙ САЙДБАР (ИСПРАВЛЕН) ========== */
-function sOpenSidebar(){
-  var sb=document.getElementById("ssb");
-  var ov=document.getElementById("soverlay");
-  var w=window.innerWidth;
-  if(w>768) return; // на десктопе не нужно открывать (он всегда виден)
-  sb.style.position="fixed";
-  sb.style.left="0";
-  sb.style.top="0";
-  sb.style.zIndex="99";
-  sb.style.height="100%";
-  ov.style.display="block";
-  sSidebarOpen = true;
-}
+function sOpenSidebar() { if (window.innerWidth > 768) return; sidebarEl.classList.add("is-open"); overlayEl.classList.add("is-open"); document.body.style.overflow = "hidden"; sSidebarOpen = true; }
+function sCloseSidebar() { sidebarEl.classList.remove("is-open"); overlayEl.classList.remove("is-open"); document.body.style.overflow = ""; sSidebarOpen = false; sendHeightToParent(); }
+function sCheckMobile() { var w = window.innerWidth; var mobBtn = root.querySelector(".mob-filter-btn"); if (w <= 768) { if (mobBtn) mobBtn.style.display = "block"; if (!sSidebarOpen) sCloseSidebar(); } else { if (mobBtn) mobBtn.style.display = "none"; sCloseSidebar(); } }
 
-function sCloseSidebar(){
-  var sb=document.getElementById("ssb");
-  var ov=document.getElementById("soverlay");
-  var w=window.innerWidth;
-  ov.style.display="none";
-  if(w<=768){
-    // на мобильном – убираем за экран
-    sb.style.position="fixed";
-    sb.style.left="-320px";
-    sb.style.top="0";
-    sb.style.zIndex="99";
-    sb.style.height="100%";
-  } else {
-    // на десктопе – возвращаем в обычное состояние
-    sb.style.position="absolute";
-    sb.style.left="0";
-    sb.style.top="0";
-    sb.style.zIndex="10";
-    sb.style.height="100%";
-  }
-  sSidebarOpen = false;
-}
-
-function sCheckMobile(){
-  var w=window.innerWidth;
-  var sb=document.getElementById("ssb");
-  var mob=document.getElementById("smob-btn");
-  var ov=document.getElementById("soverlay");
-
-  if(w<=768){
-    // Мобильный режим
-    mob.style.display="block";
-    // Если сайдбар не был открыт – прячем за экран, иначе оставляем открытым (left:0)
-    if(!sSidebarOpen){
-      sb.style.position="fixed";
-      sb.style.left="-320px";
-      sb.style.top="0";
-      sb.style.zIndex="99";
-      sb.style.height="100%";
-      ov.style.display="none";
-    } else {
-      // Если открыт – оставляем left:0, но проверяем, что position:fixed
-      sb.style.position="fixed";
-      sb.style.left="0";
-      sb.style.top="0";
-      sb.style.zIndex="99";
-      sb.style.height="100%";
-      ov.style.display="block";
-    }
-  } else {
-    // Десктопный режим
-    mob.style.display="none";
-    sb.style.position="absolute";
-    sb.style.left="0";
-    sb.style.top="0";
-    sb.style.zIndex="10";
-    sb.style.height="100%";
-    ov.style.display="none";
-    sSidebarOpen = false; // на десктопе флаг не нужен
-  }
-}
-
-window.addEventListener("resize", function(){
-  sCheckMobile();
-  sRenderCatalog();
+root.addEventListener('click', function(e) {
+  var target = e.target.closest('[data-action]');
+  if (!target) return;
+  var action = target.getAttribute('data-action');
+  var cat = target.getAttribute('data-cat');
+  var sub = target.getAttribute('data-sub');
+  var gid = target.getAttribute('data-gid');
+  if (action === 'toggle-group') {
+    var list = document.getElementById(gid + "_list");
+    var arr = document.getElementById(gid + "_arr");
+    if (!list) return;
+    var show = list.style.display === "none" || list.style.display === "";
+    list.style.display = show ? "block" : "none";
+    if (arr) arr.style.transform = show ? "rotate(90deg)" : "";
+    setTimeout(sendHeightToParent, 300);
+  } 
+  else if (action === 'toggle-sub') { sToggleSub(cat, sub); } 
+  else if (action === 'reset') { sResetAll(); } 
+  else if (action === 'open-filters') { sOpenSidebar(); } 
+  else if (action === 'close-filters') { sCloseSidebar(); }
 });
+
+sortEl.addEventListener('change', function(e) { sSort = e.target.value; sRenderCatalog(); });
+window.addEventListener("resize", function() { sCheckMobile(); sendHeightToParent(); });
 
 sLoad();
 sCheckMobile();
