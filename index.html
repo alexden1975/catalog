@@ -174,22 +174,26 @@
 
 <div class="overlay" id="soverlay" data-action="close-filters"></div>
 
+<div class="float-cart" data-action="checkout">
+  🛒
+  <span class="cart-badge" id="cart-count">0</span>
+</div>
+  
 <script>
 var SHEET_ID = "1oQ9WrKBZiJwRFu_FMoJGHJH4pZLLXkgVeOaneu85diU";
 var sItems = [], sSel = {}, sSort = "default", sSearch = "";
+var sCart = JSON.parse(localStorage.getItem('sCart') || '[]');
+var sFav = JSON.parse(localStorage.getItem('sFav') || '[]');
 
-function sendHeightToParent() {
-  var height = document.body.scrollHeight;
-  if (window.parent) window.parent.postMessage({ type: 'tildaFrameHeight', height: height }, '*');
-}
+function sendHeightToParent() { var h = document.body.scrollHeight; if (window.parent) window.parent.postMessage({ type: 'tildaFrameHeight', height: h }, '*'); }
 
 function normalizeStr(str) { if (!str) return ""; str = String(str).trim(); return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase(); }
 
 function sLoad() {
   fetch("https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/export?format=csv&gid=0")
     .then(r => r.ok ? r.text() : Promise.reject())
-    .then(t => { sItems = sParseCSV(t); sRenderAll(); })
-    .catch(() => { document.getElementById("scatalog").innerHTML = '<div class="empty">Ошибка загрузки каталога.<br>Проверьте доступ к Google Таблице.</div>'; sendHeightToParent(); });
+    .then(t => { sItems = sParseCSV(t); sRenderAll(); updateCartUI(); })
+    .catch(() => { document.getElementById("scatalog").innerHTML = '<div class="empty">Ошибка загрузки</div>'; sendHeightToParent(); });
 }
 
 function sParseCSV(text) {
@@ -230,11 +234,7 @@ function sGetFiltered() {
       sItems.filter(i => i.cat === c && (sub ? i.sub === sub : true)).forEach(i => out.push({...i}));
     });
   });
-  
-  if (sSearch) {
-    out = out.filter(i => i.name.toLowerCase().includes(sSearch.toLowerCase()));
-  }
-
+  if (sSearch) out = out.filter(i => i.name.toLowerCase().includes(sSearch.toLowerCase()));
   if (sSort === "price-asc") out.sort((a, b) => a.price - b.price);
   else if (sSort === "price-desc") out.sort((a, b) => b.price - a.price);
   else if (sSort === "name") out.sort((a, b) => a.name.localeCompare(b.name));
@@ -277,11 +277,7 @@ function sRenderCatalog() {
   var el = document.getElementById("scatalog");
   document.getElementById("scount").textContent = list.length + " товаров";
   
-  if (!list.length) {
-    el.innerHTML = '<div class="empty">Ничего не найдено</div>';
-    sendHeightToParent();
-    return;
-  }
+  if (!list.length) { el.innerHTML = '<div class="empty">Ничего не найдено</div>'; sendHeightToParent(); return; }
   
   var h = "";
   list.forEach((p, i) => {
@@ -290,8 +286,7 @@ function sRenderCatalog() {
       : '<div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#999;">Нет фото</div>';
     
     var saleBadge = p.old ? '<div class="badge-sale">SALE</div>' : '';
-    
-    // Задержка для анимации появления
+    var isFav = sFav.includes(p.name) ? 'active' : '';
     var delay = i * 0.05;
     
     h += '<div class="card" style="animation-delay:' + delay + 's">';
@@ -301,10 +296,61 @@ function sRenderCatalog() {
     h += '<div class="card-name">' + p.name + '</div>';
     h += '<div class="card-price">' + (p.price ? p.price.toLocaleString("ru-RU") + " ₽" : "По запросу");
     if (p.old) h += '<span class="card-old-price">' + p.old.toLocaleString("ru-RU") + " ₽</span>";
-    h += '</div></div></div>';
+    h += '</div>';
+    
+    // КНОПКИ ИЗБРАННОГО И КОРЗИНЫ
+    h += '<div class="card-actions">';
+    h += '<button class="btn-fav ' + isFav + '" data-action="fav" data-name="' + p.name + '" data-price="' + p.price + '" data-img="' + p.img + '">♥</button>';
+    h += '<button class="btn-add-cart" data-action="add-cart" data-name="' + p.name + '" data-price="' + p.price + '" data-img="' + p.img + '">В корзину</button>';
+    h += '</div>';
+    
+    h += '</div></div>';
   });
   el.innerHTML = h;
   setTimeout(sendHeightToParent, 600);
+}
+
+// ЛОГИКА КОРЗИНЫ И ИЗБРАННОГО
+function updateCartUI() {
+  document.getElementById("cart-count").textContent = sCart.length;
+}
+
+function addToCart(name, price, img) {
+  sCart.push({ name, price, img });
+  localStorage.setItem('sCart', JSON.stringify(sCart));
+  updateCartUI();
+  // Анимация нажатия
+  var badge = document.getElementById('cart-count');
+  badge.style.transform = 'scale(1.5)';
+  setTimeout(() => badge.style.transform = 'scale(1)', 200);
+}
+
+function toggleFav(btn, name, price, img) {
+  var idx = sFav.indexOf(name);
+  if (idx >= 0) sFav.splice(idx, 1);
+  else { 
+    sFav.push(name); 
+  }
+  localStorage.setItem('sFav', JSON.stringify(sFav));
+  btn.classList.toggle('active');
+}
+
+function checkout() {
+  if (sCart.length === 0) { alert("Корзина пуста!"); return; }
+  
+  // Собираем список товаров в текст
+  var orderText = "Здравствуйте! Хочу заказать:\n\n";
+  var total = 0;
+  sCart.forEach((item, i) => {
+    orderText += (i+1) + ". " + item.name + " — " + item.price.toLocaleString('ru-RU') + " ₽\n";
+    total += item.price;
+  });
+  orderText += "\nИтого: " + total.toLocaleString('ru-RU') + " ₽";
+  
+  // Отправляем сообщение в Тильду
+  if (window.parent) {
+    window.parent.postMessage({ type: 'tildaCustomOrder', orderData: orderText }, '*');
+  }
 }
 
 function sToggleSub(cat, sub) {
@@ -319,7 +365,6 @@ function sToggleSub(cat, sub) {
 function sResetAll() { sSel = {}; document.getElementById("ssearch").value = ""; sSearch = ""; sRenderAll(); }
 function sRenderAll() { sRenderFilters(); sRenderTags(); sRenderCatalog(); }
 
-// ОБРАБОТКА КЛИКОВ
 document.addEventListener('click', function(e) {
   var target = e.target.closest('[data-action]');
   if (!target) return;
@@ -331,7 +376,7 @@ document.addEventListener('click', function(e) {
   } 
   else if (action === 'toggle-sub') {
     sToggleSub(target.getAttribute('data-cat'), target.getAttribute('data-sub'));
-    if (window.innerWidth <= 900) sCloseSidebar(); // Закрывать меню при выборе на мобилках
+    if (window.innerWidth <= 900) sCloseSidebar();
   } 
   else if (action === 'reset') { sResetAll(); } 
   else if (action === 'open-filters') {
@@ -340,6 +385,13 @@ document.addEventListener('click', function(e) {
     document.body.style.overflow = "hidden";
   } 
   else if (action === 'close-filters') { sCloseSidebar(); }
+  else if (action === 'add-cart') {
+    addToCart(target.getAttribute('data-name'), parseInt(target.getAttribute('data-price')), target.getAttribute('data-img'));
+  }
+  else if (action === 'fav') {
+    toggleFav(target, target.getAttribute('data-name'), parseInt(target.getAttribute('data-price')), target.getAttribute('data-img'));
+  }
+  else if (action === 'checkout') { checkout(); }
 });
 
 function sCloseSidebar() {
